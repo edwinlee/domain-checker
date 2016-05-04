@@ -1,10 +1,10 @@
-var domain = require('./domain');
+var router = require('./router');
 
-var names = process.argv.slice(2);
+var http = require('http');
 
-if(names.length < 1) {
-	console.log("Please enter at least one domain name.");
-	return;
-}
+http.createServer( (request, response) => {
+  router.home(request, response);
+  router.domain(request, response);
+}).listen(8124);
 
-names.forEach(domain.check);
+console.log('Server running at http://127.0.0.1:8124/');

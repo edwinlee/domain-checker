@@ -1,48 +1,56 @@
-function check(domain) {
+var EventEmitter = require("events").EventEmitter;
+var http = require("http");
+var util = require("util");
+var querystring = require("querystring");
 
-	var http = require("http");
-	var querystring = require("querystring");
+function Domain(name) {
+
+	EventEmitter.call(this);
+
+	domainEmitter = this;
 
 	var data = querystring.stringify({
 			cmd : "GET_DN_AVAILABILITY",
-      domainName : domain,
+      domainName : name,
       userName : "edwinlee",
       password : "testing",
       getMode : "DNS_AND_WHOIS",
       outputFormat : "JSON"
 	});
 
-	var options = {
-		host: "whoisxmlapi.com",
-		path: "/whoisserver/WhoisService?" + data
-	};
-
-	var req = http.request(options, (res) => {
+	var req = http.get("http://whoisxmlapi.com/whoisserver/WhoisService?" + data, (res) => {
 		var body = "";
+
+		 if (res.statusCode !== 200) {
+          request.abort();
+          //Status Code Error
+          domainEmitter.emit("error", new Error("There was an error getting the domain for " + name + ". (" + http.STATUS_CODES[res.statusCode] + ")"));
+      }
+		
 		res.on('data', (chunk) => {
 			body += chunk;
+			domainEmitter.emit("data", chunk);
 		});
+
 		res.on('end', () => {
 			if(res.statusCode == 200) {
 				try {
 					var status = JSON.parse(body);	
-					console.log(domain + " is " + status.DomainInfo.domainAvailability.toLowerCase() + ".");
+						domainEmitter.emit('end', status.DomainInfo.domainAvailability.toLowerCase());
 				} catch(error) {
-					console.log(error);
+						domainEmitter.emit('error', error);
 				}
-			} else {
-				console.log(res.statusCode);	
-			}	
-		})
+			}
+		}).on("error", (error) => {
+			domainEmitter.emit("error", error);
+		});
+
 	});
 
-	req.on('error', (e) => {
-		console.log(`problem with request: ${e.message}`);
-	});
-
-	req.end();
 }
 
-module.exports.check = check;
+util.inherits(Domain, EventEmitter);
+
+module.exports = Domain;
 
 
