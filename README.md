@@ -1,6 +1,10 @@
-# node-domain-checker
-This is a simple domain name checker that uses the command line. You can pass one or multiple domain names as arguments.
+# domain-checker
+This is a simple app that checks the availability of a domain name.
 
-*Example usage*
+You'll need to sign up for a free API key at https://www.whoisxmlapi.com.
 
-```node app.js [domain_name_1] [domain_name_2] [domain_name_3]```
+# Installation
+
+1. Replace the username and password witn your own in the domain.js file
+
+2. Run "node ./src/app.js"
